@@ -44,7 +44,7 @@ public class DiscordClanRecruitmentPlugin extends Plugin
 	{
 		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
 		{
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "discord clan recruitment says " + config.greeting(), null);
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "clan recruitment plugin", "discord clan recruitment says " + config.greeting(), null);
 		}
 	}
 
@@ -55,20 +55,26 @@ public class DiscordClanRecruitmentPlugin extends Plugin
 	}
 	@Subscribe
 	public void onChatMessage(ChatMessage event) {
-//		if (event.getType() != ChatMessageType.CLAN_MESSAGE) {
+//		if (event.getType() != ChatMessageType.CLAN_MESSAGE || event.getType() != ChatMessageType.CLAN_CHAT) {
 //			return;
 //		}
-
-		String msg = Text.standardize(event.getMessage()); //remove color
+	if (event.getType() != ChatMessageType.CLAN_MESSAGE) {
+            return;
+        }
+		String msg = event.getMessage();
+//		msg = Text.standardize(event.getMessage());//remove color
+		msg = Text.removeTags(msg).replace('\u00A0', ' ').trim();
 		String target_str = " has been invited into the clan by ";
 		if (msg.contains(target_str)) {
-			String tosplit = msg.replace(target_str, "--");
+			String tosplit = msg.replace(target_str, ":");
 			log.info("tosplit: " + tosplit);
-			String[] splitted = tosplit.split("--");
-			log.info("splitted: " + splitted[0] + " " + splitted[1]);
-			String invited = splitted[0];
-			String recruiter = splitted[1];
+			String[] splitted = tosplit.split(":");
+			String invited = Text.toJagexName(splitted[0]);
+			String recruiter = Text.toJagexName(splitted[1]);
+
 			log.info("recruitment message: " + msg);
+			log.info("splitted: " + invited + " " + recruiter);
+
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "clan recruitment plugin", msg + " event type: " + event.getType(), null);
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "clan recruitment plugin", "invited: " + invited + " recruiter " + recruiter, null);
 		}
